@@ -1,0 +1,896 @@
+Index: Bank.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Bank.py b/Bank.py
+--- a/Bank.py	(date 1674147090852)
++++ b/Bank.py	
+@@ -1,7 +1,7 @@
+ from Customer import Customer
+ from Account import Account
+ 
+-
++from Customer import Customer
+ 
+ 
+ class BankingFunctions:
+@@ -16,94 +16,66 @@
+         customer = Customer(username, password)
+         self.customers.append(customer)
+ 
+-    def get_customer(self, username):
++    def get_customer(self, username): #working
+         for customer in self.customers:
+             if customer.username == username:
+                 return customer
+         raise ValueError("Customer not found")
+ 
+-    def remove_customer(self, username):
++    def remove_customer(self, username): #working
+         customer = self.get_customer(username)
+-        if customer is not None:
+-            self.customers.remove(customer)
+-        return print("Customer is not logged in.")
++        self.customers.remove(customer)
+ 
+-    def get_customers(self):
++    def get_customers(self): #works
+         return self.customers
+ 
+-    def add_account(self, customer, account_number, balance):
++    def add_account(self, customer, account_number, balance): #works
+         customer.add_account(account_number, balance)
+ 
+-    def get_account(self, customer, account_number):
++    def get_account(self, customer, account_number): #works
+         for account in customer.accounts:
+             if account.account_number == account_number:
+                 return account
+-        return print("Account not found")
++        raise ValueError("Account not found")
+ 
+-    def remove_account(self, customer, account_number):
++    def remove_account(self, customer, account_number): #working
+         account = self.get_account(customer, account_number)
+         customer.accounts.remove(account)
+ 
+-    def deposit(self, account_number, amount):
+-        account = self.get_account(account_number)
+-        if account is not None:
+-            account.change_balance(amount)
+-            return print("Successfully deposited amount.")
+-        return print("Account number is not found.")
++    def get_accounts(self, customer): #NOT WORKING
++        return customer.accounts
+ 
+-    def withdraw(self, account_number, amount):
+-        account = self.get_account(account_number)
+-        if account is not None and account.get_balance() >= amount:
+-            account.change_balance(-amount)
+-            return print("Withdraw successful.")
+-        return print("Insufficient balance")
++    def deposit(self, account, amount): #works
++        account.balance += amount
+ 
+-    def get_all_balances(self, customer):
++    def withdraw(self, account, amount): #works
++        if account.balance < amount:
++            raise ValueError("Insufficient funds")
++        account.balance -= amount
++
++    def get_all_balances(self, customer): # works
+         balances = []
+         for account in customer.accounts:
+             balances.append(account.balance)
+         return balances
+ 
+-    def login(self, username, password): #working
+-        customer = self.get_customer(username)
+-        if customer is not None and customer.check_password(password):
+-            self.current_user = customer
+-            return print("Succesfull logged in.")
+-        return print("No username is found or your username or password are incorrect.")
++    def login(self, username, password): #works
++        for customer in self.customers:
++            if customer.username == username and customer.password == password:
++                self.current_user = customer
++                return customer
++        raise ValueError("Invalid username or password")
+ 
+-    def logout(self):
++    def logout(self): #works
+         self.current_user = None
+         return print("User has been logged out.")
+ 
+-    def change_customer_password(self, username, new_password):
++    def change_password(self, username, new_password): #works
+         customer = self.get_customer(username)
+-        if customer is not None:
+-            customer.change_password = new_password
+-            return print("Succesfully changed password.")
+-        return print("No customer is not logged in.")
+-
+-    def remove_customer(self, username):
+-        customer = self.get_customer(username)
+-        if customer is not None:
+-            self.customers.remove(customer)
+-            return print("Successfully removed customer.")
+-        return print("No customer is saved in the system.")
+-
+-    def check_logged_in_user(self):
+-        return self.current_user
+-
+-    def get_user_accounts(self, customer):
+-        return customer.accounts
++        customer.change_password(new_password)
+ 
+-    def print_user_accounts(self, customer):
+-        for account in customer.accounts:
+-            print("Account Number:", account.account_number, " / Balance:", account.balance)
+ 
+-    def print_all_customers(self):
+-        for customer in self.customers:
+-            print("Username:", customer.username)
+-
+-    def print_to_file(self):
++    def print_to_file(self): #works
+         with open("customers.txt", "w") as file:
+             for customer in self.customers:
+                 file.write(str(customer) + "#")
+@@ -112,6 +84,21 @@
+                     file.write(str(account) + "@")
+                 file.write("\n")
+ 
++    def check_logged_in_user(self): #works
++        return self.current_user
++
++    def get_user_accounts(self, customer): #works
++        return customer.accounts
++
++    def print_user_accounts(self, customer): #works
++        for account in customer.accounts:
++            print("Account Number:", account.account_number, " / Balance:", account.balance)
++
++    def print_all_customers(self): #working
++        for customer in self.customers:
++            print("Username:", customer.username)
++
++
+     def read_from_file(self, file_name):
+         with open(file_name, 'r') as file:
+             for line in file:
+@@ -125,9 +112,9 @@
+                     account_info = accounts.split('/')
+                     account_numbers.append(account_info[0])
+                     balances.append(account_info[1])
+-                print("username:", username)
+-                print("password:", password)
+-                print("accounts:", account_numbers)
+-                print("balances:", balances)
++                print('username:',username)
++                print('password:',password)
++                print('accounts:',account_numbers)
++                print('balances:',balances)
+             return username, password, account_numbers, balances
+ 
+Index: Account.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Account.py b/Account.py
+--- a/Account.py	(date 1674145879497)
++++ b/Account.py	
+@@ -1,14 +1,14 @@
++#!/usr/bin/env python
++# coding: utf-8
++
++# In[2]:
++
++
+ class Account:
+     def __init__(self, account_number, balance):
+         self.account_number = account_number
+         self.balance = balance
+ 
+-    def change_balance(self, amount):
+-        self.balance += amount
+-
+-    def get_balance(self):
+-        return self.balance
+-
+     def __str__(self):
+         return f"{self.account_number}/{self.balance}"
+ 
+Index: Main.ipynb
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Main.ipynb b/Main.ipynb
+--- a/Main.ipynb	(date 1674147054505)
++++ b/Main.ipynb	
+@@ -2,7 +2,7 @@
+  "cells": [
+   {
+    "cell_type": "code",
+-   "execution_count": 1,
++   "execution_count": 46,
+    "id": "98ab4de4",
+    "metadata": {},
+    "outputs": [],
+@@ -12,30 +12,10 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": 2,
++   "execution_count": 47,
+    "id": "1e7eaf45",
+    "metadata": {},
+-   "outputs": [
+-    {
+-     "name": "stdout",
+-     "output_type": "stream",
+-     "text": [
+-      "Succesfull logged in.\n"
+-     ]
+-    },
+-    {
+-     "ename": "AttributeError",
+-     "evalue": "'NoneType' object has no attribute 'add_account'",
+-     "output_type": "error",
+-     "traceback": [
+-      "\u001B[1;31m---------------------------------------------------------------------------\u001B[0m",
+-      "\u001B[1;31mAttributeError\u001B[0m                            Traceback (most recent call last)",
+-      "\u001B[1;32m~\\AppData\\Local\\Temp\\ipykernel_20504\\1117485383.py\u001B[0m in \u001B[0;36m<module>\u001B[1;34m\u001B[0m\n\u001B[0;32m      4\u001B[0m \u001B[0mbf\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0madd_customer\u001B[0m\u001B[1;33m(\u001B[0m\u001B[1;34m\"jameskent\"\u001B[0m\u001B[1;33m,\u001B[0m \u001B[1;34m\"password\"\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m      5\u001B[0m \u001B[0mcustomer\u001B[0m \u001B[1;33m=\u001B[0m \u001B[0mbf\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0mlogin\u001B[0m\u001B[1;33m(\u001B[0m\u001B[1;34m\"jameskent\"\u001B[0m\u001B[1;33m,\u001B[0m \u001B[1;34m\"password\"\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[1;32m----> 6\u001B[1;33m \u001B[0mbf\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0madd_account\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mcustomer\u001B[0m\u001B[1;33m,\u001B[0m \u001B[1;34m\"123456\"\u001B[0m\u001B[1;33m,\u001B[0m \u001B[1;36m1000\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0m\u001B[0;32m      7\u001B[0m \u001B[0mbf\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0madd_account\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mcustomer\u001B[0m\u001B[1;33m,\u001B[0m \u001B[1;34m\"654321\"\u001B[0m\u001B[1;33m,\u001B[0m \u001B[1;36m500\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n",
+-      "\u001B[1;32m~\\Python Library\\Uppgift\\Bank.py\u001B[0m in \u001B[0;36madd_account\u001B[1;34m(self, customer, account_number, balance)\u001B[0m\n\u001B[0;32m     33\u001B[0m \u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m     34\u001B[0m     \u001B[1;32mdef\u001B[0m \u001B[0madd_account\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mself\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0mcustomer\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0maccount_number\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0mbalance\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m:\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[1;32m---> 35\u001B[1;33m         \u001B[0mcustomer\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0madd_account\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0maccount_number\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0mbalance\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0m\u001B[0;32m     36\u001B[0m \u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m     37\u001B[0m     \u001B[1;32mdef\u001B[0m \u001B[0mget_account\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mself\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0mcustomer\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0maccount_number\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m:\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n",
+-      "\u001B[1;31mAttributeError\u001B[0m: 'NoneType' object has no attribute 'add_account'"
+-     ]
+-    }
+-   ],
++   "outputs": [],
+    "source": [
+     "bf = BankingFunctions()\n",
+     "\n",
+@@ -48,7 +28,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 48,
+    "outputs": [],
+    "source": [
+     "bf.add_account(customer, \"laksjdla\", 600)"
+@@ -59,10 +39,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 49,
+    "id": "28afb9cc",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "All Customers: [Username: jameskent / Password: password ]\n"
++     ]
++    }
++   ],
+    "source": [
+     "# Get all customers\n",
+     "customers = bf.get_customers()\n",
+@@ -71,8 +59,17 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
++   "execution_count": 50,
++   "outputs": [
++    {
++     "data": {
++      "text/plain": "Account Number: laksjdla / Balance: 600 "
++     },
++     "execution_count": 50,
++     "metadata": {},
++     "output_type": "execute_result"
++    }
++   ],
+    "source": [
+     "bf.get_account(customer, \"laksjdla\")"
+    ],
+@@ -82,8 +79,16 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
++   "execution_count": 51,
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "laksjdla/600\n"
++     ]
++    }
++   ],
+    "source": [
+     "account = bf.get_account(customer, \"laksjdla\")\n",
+     "print(account)"
+@@ -94,7 +99,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 52,
+    "outputs": [],
+    "source": [
+     "#bf.remove_account(customer, \"654321\")"
+@@ -105,10 +110,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 53,
+    "id": "d6d9966f",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "Specific Customer jameskent/password\n"
++     ]
++    }
++   ],
+    "source": [
+     "# Get specific customer\n",
+     "customer = bf.get_customer(\"jameskent\")\n",
+@@ -117,7 +130,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 54,
+    "id": "d192ecbd",
+    "metadata": {},
+    "outputs": [],
+@@ -128,10 +141,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 55,
+    "id": "74df5b7a",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "All Accounts: [Account Number: 123456 / Balance: 1000 , Account Number: 654321 / Balance: 500 , Account Number: laksjdla / Balance: 600 ]\n"
++     ]
++    }
++   ],
+    "source": [
+     "# Get all accounts of a customer\n",
+     "customer = bf.get_customer(\"jameskent\")\n",
+@@ -141,10 +162,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 56,
+    "id": "3bdc16c1",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "123456/1000\n"
++     ]
++    }
++   ],
+    "source": [
+     "# Get specific account\n",
+     "account = bf.get_account(customer, \"123456\")\n",
+@@ -153,7 +182,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 57,
+    "id": "c7588f1c",
+    "metadata": {},
+    "outputs": [],
+@@ -164,10 +193,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 58,
+    "id": "81104626",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "123456/1500\n"
++     ]
++    }
++   ],
+    "source": [
+     "# Shows account info (account number and balance)\n",
+     "account = bf.get_account(customer, \"123456\")\n",
+@@ -176,7 +213,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 59,
+    "id": "e32482c9",
+    "metadata": {},
+    "outputs": [],
+@@ -186,10 +223,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 60,
+    "id": "980aca0c",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "123456/3000\n"
++     ]
++    }
++   ],
+    "source": [
+     "account = bf.get_account(customer, \"123456\")\n",
+     "print(account)"
+@@ -197,7 +242,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 61,
+    "id": "32ae6f03",
+    "metadata": {},
+    "outputs": [],
+@@ -208,10 +253,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 62,
+    "id": "8801fbf6",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "123456/2750\n"
++     ]
++    }
++   ],
+    "source": [
+     "account = bf.get_account(customer, \"123456\")\n",
+     "print(account)"
+@@ -219,10 +272,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 63,
+    "id": "069a12d6",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "All Accounts Balances: [2750, 500, 600]\n"
++     ]
++    }
++   ],
+    "source": [
+     "# Get all account balances\n",
+     "all_balances = bf.get_all_balances(customer)\n",
+@@ -231,7 +292,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 64,
+    "id": "d9b76113",
+    "metadata": {},
+    "outputs": [],
+@@ -242,10 +303,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 65,
+    "id": "126c8cbb",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "User has been logged out.\n"
++     ]
++    }
++   ],
+    "source": [
+     "# Logout\n",
+     "bf.logout()"
+@@ -253,17 +322,26 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 66,
+    "id": "71710d07",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "data": {
++      "text/plain": "Username: jameskent / Password: new_password "
++     },
++     "execution_count": 66,
++     "metadata": {},
++     "output_type": "execute_result"
++    }
++   ],
+    "source": [
+     "bf.login(\"jameskent\", \"new_password\")"
+    ]
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 67,
+    "id": "3b88184c",
+    "metadata": {},
+    "outputs": [],
+@@ -274,7 +352,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 68,
+    "id": "b272ed8d",
+    "metadata": {},
+    "outputs": [],
+@@ -287,10 +365,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 69,
+    "id": "4b548561",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "abcd/1000\n"
++     ]
++    }
++   ],
+    "source": [
+     "account = bf.get_account(customer2, \"abcd\")\n",
+     "print(account)"
+@@ -298,18 +384,35 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 70,
+    "id": "a94c5036",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "User has been logged out.\n"
++     ]
++    }
++   ],
+    "source": [
+     "bf.logout()"
+    ]
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
++   "execution_count": 71,
++   "outputs": [
++    {
++     "data": {
++      "text/plain": "Username: annamaria / Password: password1 "
++     },
++     "execution_count": 71,
++     "metadata": {},
++     "output_type": "execute_result"
++    }
++   ],
+    "source": [
+     "bf.login(\"annamaria\",\"password1\")"
+    ],
+@@ -319,7 +422,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 72,
+    "id": "d9103137",
+    "metadata": {},
+    "outputs": [],
+@@ -330,10 +433,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 73,
+    "id": "af721446",
+    "metadata": {},
+-   "outputs": [],
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "abcd/1000\n"
++     ]
++    }
++   ],
+    "source": [
+     "account = bf.get_account(customer2, \"abcd\")\n",
+     "print(account)"
+@@ -341,8 +452,16 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
++   "execution_count": 74,
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "Logged in user is:  annamaria/password1\n"
++     ]
++    }
++   ],
+    "source": [
+     "#checks which user is logged in\n",
+     "print(\"Logged in user is: \", bf.check_logged_in_user())"
+@@ -353,8 +472,17 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
++   "execution_count": 75,
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "Account Number: abcd  / Balance: 1000\n",
++      "Account Number: defg  / Balance: 500\n"
++     ]
++    }
++   ],
+    "source": [
+     "users = bf.get_customers()\n",
+     "bf.print_user_accounts(customer2)"
+@@ -365,7 +493,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 76,
+    "outputs": [],
+    "source": [
+     "bf.add_customer(\"amanda\", \"password2\")\n",
+@@ -379,7 +507,7 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
++   "execution_count": 77,
+    "outputs": [],
+    "source": [
+     "bf.print_to_file()"
+@@ -390,8 +518,18 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
++   "execution_count": 78,
++   "outputs": [
++    {
++     "name": "stdout",
++     "output_type": "stream",
++     "text": [
++      "Username: jameskent\n",
++      "Username: annamaria\n",
++      "Username: amanda\n"
++     ]
++    }
++   ],
+    "source": [
+     "bf.print_all_customers()"
+    ],
+@@ -401,8 +539,21 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
++   "execution_count": 81,
++   "outputs": [
++    {
++     "ename": "IndexError",
++     "evalue": "list index out of range",
++     "output_type": "error",
++     "traceback": [
++      "\u001B[1;31m---------------------------------------------------------------------------\u001B[0m",
++      "\u001B[1;31mIndexError\u001B[0m                                Traceback (most recent call last)",
++      "\u001B[1;32m~\\AppData\\Local\\Temp\\ipykernel_19832\\643076283.py\u001B[0m in \u001B[0;36m<module>\u001B[1;34m\u001B[0m\n\u001B[0;32m      1\u001B[0m \u001B[0mfile_name\u001B[0m \u001B[1;33m=\u001B[0m \u001B[1;34m\"customers3.txt\"\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[1;32m----> 2\u001B[1;33m \u001B[0mbf\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0mread_from_file\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mfile_name\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0m",
++      "\u001B[1;32m~\\Python Library\\Uppgift\\Bank.py\u001B[0m in \u001B[0;36mread_from_file\u001B[1;34m(self, file_name)\u001B[0m\n\u001B[0;32m    112\u001B[0m                     \u001B[0maccount_info\u001B[0m \u001B[1;33m=\u001B[0m \u001B[0maccounts\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0msplit\u001B[0m\u001B[1;33m(\u001B[0m\u001B[1;34m'/'\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m    113\u001B[0m                     \u001B[0maccount_numbers\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0mappend\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0maccount_info\u001B[0m\u001B[1;33m[\u001B[0m\u001B[1;36m0\u001B[0m\u001B[1;33m]\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[1;32m--> 114\u001B[1;33m                     \u001B[0mbalances\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0mappend\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0maccount_info\u001B[0m\u001B[1;33m[\u001B[0m\u001B[1;36m1\u001B[0m\u001B[1;33m]\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0m\u001B[0;32m    115\u001B[0m                 \u001B[0mprint\u001B[0m\u001B[1;33m(\u001B[0m\u001B[1;34m'username:'\u001B[0m\u001B[1;33m,\u001B[0m\u001B[0musername\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m    116\u001B[0m                 \u001B[0mprint\u001B[0m\u001B[1;33m(\u001B[0m\u001B[1;34m'password:'\u001B[0m\u001B[1;33m,\u001B[0m\u001B[0mpassword\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n",
++      "\u001B[1;31mIndexError\u001B[0m: list index out of range"
++     ]
++    }
++   ],
+    "source": [
+     "file_name = \"customers3.txt\"\n",
+     "bf.read_from_file(file_name)"
+@@ -413,8 +564,21 @@
+   },
+   {
+    "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
++   "execution_count": 80,
++   "outputs": [
++    {
++     "ename": "IndexError",
++     "evalue": "list index out of range",
++     "output_type": "error",
++     "traceback": [
++      "\u001B[1;31m---------------------------------------------------------------------------\u001B[0m",
++      "\u001B[1;31mIndexError\u001B[0m                                Traceback (most recent call last)",
++      "\u001B[1;32m~\\AppData\\Local\\Temp\\ipykernel_19832\\1563176662.py\u001B[0m in \u001B[0;36m<module>\u001B[1;34m\u001B[0m\n\u001B[0;32m      1\u001B[0m \u001B[0mfile_name2\u001B[0m \u001B[1;33m=\u001B[0m \u001B[1;34m\"customers3.txt\"\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[1;32m----> 2\u001B[1;33m \u001B[0mname\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0musername\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0mpassword\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0maccount_numbers\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0mbalances\u001B[0m \u001B[1;33m=\u001B[0m \u001B[0mbf\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0mread_from_file\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mfile_name2\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0m\u001B[0;32m      3\u001B[0m \u001B[0mcustomer\u001B[0m \u001B[1;33m=\u001B[0m \u001B[0mbf\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0madd_customer\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mname\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0musername\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0mpassword\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m      4\u001B[0m \u001B[1;32mfor\u001B[0m \u001B[0mi\u001B[0m \u001B[1;32min\u001B[0m \u001B[0mrange\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mlen\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0maccount_numbers\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m:\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m      5\u001B[0m     \u001B[0mbf\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0madd_account\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mcustomer\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0maccount_numbers\u001B[0m\u001B[1;33m[\u001B[0m\u001B[0mi\u001B[0m\u001B[1;33m]\u001B[0m\u001B[1;33m,\u001B[0m \u001B[0mint\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0mbalances\u001B[0m\u001B[1;33m[\u001B[0m\u001B[0mi\u001B[0m\u001B[1;33m]\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n",
++      "\u001B[1;32m~\\Python Library\\Uppgift\\Bank.py\u001B[0m in \u001B[0;36mread_from_file\u001B[1;34m(self, file_name)\u001B[0m\n\u001B[0;32m    112\u001B[0m                     \u001B[0maccount_info\u001B[0m \u001B[1;33m=\u001B[0m \u001B[0maccounts\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0msplit\u001B[0m\u001B[1;33m(\u001B[0m\u001B[1;34m'/'\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m    113\u001B[0m                     \u001B[0maccount_numbers\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0mappend\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0maccount_info\u001B[0m\u001B[1;33m[\u001B[0m\u001B[1;36m0\u001B[0m\u001B[1;33m]\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[1;32m--> 114\u001B[1;33m                     \u001B[0mbalances\u001B[0m\u001B[1;33m.\u001B[0m\u001B[0mappend\u001B[0m\u001B[1;33m(\u001B[0m\u001B[0maccount_info\u001B[0m\u001B[1;33m[\u001B[0m\u001B[1;36m1\u001B[0m\u001B[1;33m]\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0m\u001B[0;32m    115\u001B[0m                 \u001B[0mprint\u001B[0m\u001B[1;33m(\u001B[0m\u001B[1;34m'username:'\u001B[0m\u001B[1;33m,\u001B[0m\u001B[0musername\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0;32m    116\u001B[0m                 \u001B[0mprint\u001B[0m\u001B[1;33m(\u001B[0m\u001B[1;34m'password:'\u001B[0m\u001B[1;33m,\u001B[0m\u001B[0mpassword\u001B[0m\u001B[1;33m)\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n",
++      "\u001B[1;31mIndexError\u001B[0m: list index out of range"
++     ]
++    }
++   ],
+    "source": [
+     "file_name2 = \"customers3.txt\"\n",
+     "name, username, password, account_numbers, balances = bf.read_from_file(file_name2)\n",
+Index: Customer.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/Customer.py b/Customer.py
+--- a/Customer.py	(date 1674145869781)
++++ b/Customer.py	
+@@ -1,3 +1,9 @@
++#!/usr/bin/env python
++# coding: utf-8
++
++# In[2]:
++
++
+ from Account import Account
+ 
+ 
+@@ -23,8 +29,6 @@
+     def change_password(self, new_password):
+         self.password = new_password
+ 
+-    def check_password(self, password):
+-        return password == self.password
+ 
+ 
+ 
+Index: .ipynb_checkpoints/Test.ipynb
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.ipynb_checkpoints/Test.ipynb b/.ipynb_checkpoints/Test.ipynb
+deleted file mode 100644
+--- a/.ipynb_checkpoints/Test.ipynb	(date 1674146091327)
++++ /dev/null	(date 1674146091327)
+@@ -1,57 +0,0 @@
+-{
+- "cells": [
+-  {
+-   "cell_type": "code",
+-   "execution_count": 1,
+-   "metadata": {
+-    "collapsed": true
+-   },
+-   "outputs": [
+-    {
+-     "ename": "ModuleNotFoundError",
+-     "evalue": "No module named 'Bank'",
+-     "output_type": "error",
+-     "traceback": [
+-      "\u001B[1;31m---------------------------------------------------------------------------\u001B[0m",
+-      "\u001B[1;31mModuleNotFoundError\u001B[0m                       Traceback (most recent call last)",
+-      "\u001B[1;32m~\\AppData\\Local\\Temp\\ipykernel_5800\\777912378.py\u001B[0m in \u001B[0;36m<module>\u001B[1;34m\u001B[0m\n\u001B[1;32m----> 1\u001B[1;33m \u001B[1;32mfrom\u001B[0m \u001B[0mBank\u001B[0m \u001B[1;32mimport\u001B[0m \u001B[0mBankingFunctions\u001B[0m\u001B[1;33m\u001B[0m\u001B[1;33m\u001B[0m\u001B[0m\n\u001B[0m",
+-      "\u001B[1;31mModuleNotFoundError\u001B[0m: No module named 'Bank'"
+-     ]
+-    }
+-   ],
+-   "source": [
+-    "import Bank"
+-   ]
+-  },
+-  {
+-   "cell_type": "code",
+-   "execution_count": null,
+-   "outputs": [],
+-   "source": [],
+-   "metadata": {
+-    "collapsed": false
+-   }
+-  }
+- ],
+- "metadata": {
+-  "kernelspec": {
+-   "display_name": "Python 3",
+-   "language": "python",
+-   "name": "python3"
+-  },
+-  "language_info": {
+-   "codemirror_mode": {
+-    "name": "ipython",
+-    "version": 2
+-   },
+-   "file_extension": ".py",
+-   "mimetype": "text/x-python",
+-   "name": "python",
+-   "nbconvert_exporter": "python",
+-   "pygments_lexer": "ipython2",
+-   "version": "2.7.6"
+-  }
+- },
+- "nbformat": 4,
+- "nbformat_minor": 0
+-}

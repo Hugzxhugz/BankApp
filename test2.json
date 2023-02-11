@@ -1,0 +1,1 @@
+{"customers": [{"username": "anna", "password": "password", "accounts": [{"account_number": "23456", "balance": 6000}, {"account_number": "3456", "balance": 700}]}, {"username": "james", "password": "new_pawsword", "accounts": [{"account_number": "7272", "balance": 9000}, {"account_number": "6372", "balance": 800}]}]}
